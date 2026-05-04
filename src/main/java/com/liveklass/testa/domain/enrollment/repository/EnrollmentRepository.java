@@ -16,4 +16,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByClassmate(Classmate classmate);
 
     int countByKlassAndStatusNot(Klass klass, EnrollmentStatus status);
+
+    List<Enrollment> findByKlassAndStatusNot(Klass klass, EnrollmentStatus status);
 }
