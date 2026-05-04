@@ -89,7 +89,8 @@ public class KlassService implements KlassUseCase {
         Klass klass = klassRepository.findById(classId)
                 .orElseThrow(KlassNotFoundException::new);
 
-        int currentEnrollment = enrollmentRepository.countByKlassAndStatusNot(klass, EnrollmentStatus.CANCELLED);
+        int currentEnrollment = enrollmentRepository.countByKlassAndStatusIn(klass,
+                List.of(EnrollmentStatus.PENDING, EnrollmentStatus.CONFIRMED));
 
         return KlassDetailResponse.of(klass, currentEnrollment);
     }
