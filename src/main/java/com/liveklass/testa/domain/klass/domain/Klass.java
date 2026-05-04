@@ -2,6 +2,7 @@ package com.liveklass.testa.domain.klass.domain;
 
 import com.liveklass.testa.domain.creator.domain.Creator;
 import com.liveklass.testa.domain.klass.exception.InvalidKlassException;
+import com.liveklass.testa.domain.klass.exception.InvalidStatusTransitionException;
 import com.liveklass.testa.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -85,7 +86,7 @@ public class Klass extends BaseTimeEntity {
 
     public void changeStatus(ClassStatus target) {
         if (!this.status.canTransitionTo(target)) {
-            throw new IllegalStateException(
+            throw new InvalidStatusTransitionException(
                     this.status + "에서 " + target + "(으)로 변경할 수 없습니다.");
         }
         this.status = target;
