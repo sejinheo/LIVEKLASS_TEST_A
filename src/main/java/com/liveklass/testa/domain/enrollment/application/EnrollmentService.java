@@ -23,10 +23,10 @@ import com.liveklass.testa.domain.klass.exception.CreatorNotFoundException;
 import com.liveklass.testa.domain.klass.exception.KlassNotFoundException;
 import com.liveklass.testa.domain.klass.repository.KlassRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -101,19 +101,18 @@ public class EnrollmentService implements EnrollmentUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EnrollmentResponse> findMyEnrollments(Long accountId) {
+    public Page<EnrollmentResponse> findMyEnrollments(Long accountId, Pageable pageable) {
         Account account = accountRepository.getReferenceById(accountId);
         Classmate classmate = classmateRepository.findByAccount(account)
                 .orElseThrow(ClassmateNotFoundException::new);
 
-        return enrollmentRepository.findByClassmate(classmate).stream()
-                .map(EnrollmentResponse::from)
-                .toList();
+        return enrollmentRepository.findByClassmate(classmate, pageable)
+                .map(EnrollmentResponse::from);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ClassEnrollmentResponse> findClassEnrollments(Long accountId, Long classId) {
+    public Page<ClassEnrollmentResponse> findClassEnrollments(Long accountId, Long classId, Pageable pageable) {
         Account account = accountRepository.getReferenceById(accountId);
         Creator creator = creatorRepository.findByAccount(account)
                 .orElseThrow(CreatorNotFoundException::new);
@@ -125,8 +124,7 @@ public class EnrollmentService implements EnrollmentUseCase {
             throw new KlassAccessDeniedException();
         }
 
-        return enrollmentRepository.findByKlassAndStatusNot(klass, EnrollmentStatus.CANCELLED).stream()
-                .map(ClassEnrollmentResponse::from)
-                .toList();
+        return enrollmentRepository.findByKlassAndStatusNot(klass, EnrollmentStatus.CANCELLED, pageable)
+                .map(ClassEnrollmentResponse::from);
     }
 }

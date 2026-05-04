@@ -2,8 +2,8 @@ package com.liveklass.testa.domain.enrollment.application;
 
 import com.liveklass.testa.domain.enrollment.controller.dto.ClassEnrollmentResponse;
 import com.liveklass.testa.domain.enrollment.controller.dto.EnrollmentResponse;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface EnrollmentUseCase {
 
@@ -13,7 +13,7 @@ public interface EnrollmentUseCase {
 
     void cancel(Long accountId, Long enrollmentId);
 
-    List<EnrollmentResponse> findMyEnrollments(Long accountId);
+    Page<EnrollmentResponse> findMyEnrollments(Long accountId, Pageable pageable);
 
-    List<ClassEnrollmentResponse> findClassEnrollments(Long accountId, Long classId);
+    Page<ClassEnrollmentResponse> findClassEnrollments(Long accountId, Long classId, Pageable pageable);
 }
