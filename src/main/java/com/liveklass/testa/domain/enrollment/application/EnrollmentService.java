@@ -127,7 +127,7 @@ public class EnrollmentService implements EnrollmentUseCase {
         Classmate classmate = classmateRepository.findByAccount(account)
                 .orElseThrow(ClassmateNotFoundException::new);
 
-        return enrollmentRepository.findByClassmate(classmate, pageable)
+        return enrollmentRepository.findByClassmateWithKlass(classmate, pageable)
                 .map(EnrollmentResponse::from);
     }
 
@@ -145,7 +145,7 @@ public class EnrollmentService implements EnrollmentUseCase {
             throw new KlassAccessDeniedException();
         }
 
-        return enrollmentRepository.findByKlassAndStatusNot(klass, EnrollmentStatus.CANCELLED, pageable)
+        return enrollmentRepository.findByKlassAndStatusNotWithClassmate(klass, EnrollmentStatus.CANCELLED, pageable)
                 .map(ClassEnrollmentResponse::from);
     }
 }

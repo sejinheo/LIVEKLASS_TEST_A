@@ -75,7 +75,7 @@ public class KlassService implements KlassUseCase {
         if (status != null) {
             classes = klassRepository.findByStatus(status);
         } else {
-            classes = klassRepository.findAll();
+            classes = klassRepository.findAllWithCreator();
         }
 
         return classes.stream()
@@ -86,7 +86,7 @@ public class KlassService implements KlassUseCase {
     @Override
     @Transactional(readOnly = true)
     public KlassDetailResponse findById(Long classId) {
-        Klass klass = klassRepository.findById(classId)
+        Klass klass = klassRepository.findByIdWithCreator(classId)
                 .orElseThrow(KlassNotFoundException::new);
 
         int currentEnrollment = enrollmentRepository.countByKlassAndStatusIn(klass,
