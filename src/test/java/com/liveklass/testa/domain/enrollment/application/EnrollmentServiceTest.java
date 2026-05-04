@@ -28,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,7 +88,8 @@ class EnrollmentServiceTest {
             given(klassRepository.findByIdWithLock(1L)).willReturn(Optional.of(klass));
             given(enrollmentRepository.existsByClassmateAndKlassAndStatusNot(
                     classmate, klass, EnrollmentStatus.CANCELLED)).willReturn(false);
-            given(enrollmentRepository.countByKlassAndStatusNot(klass, EnrollmentStatus.CANCELLED)).willReturn(0);
+            given(enrollmentRepository.countByKlassAndStatusIn(klass,
+                    List.of(EnrollmentStatus.PENDING, EnrollmentStatus.CONFIRMED))).willReturn(0);
 
             enrollmentService.enroll(1L, 1L);
 
@@ -131,7 +133,7 @@ class EnrollmentServiceTest {
         @Test
         @DisplayName("본인 enrollment 확정 성공")
         void confirmOwnEnrollment() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             ReflectionTestUtils.setField(enrollment, "id", 1L);
 
             given(accountRepository.getReferenceById(1L)).willReturn(account);
@@ -146,7 +148,7 @@ class EnrollmentServiceTest {
         @Test
         @DisplayName("타인의 enrollment 확정 시 예외")
         void confirmOtherEnrollmentThrows() {
-            Enrollment enrollment = Enrollment.create(otherClassmate, klass);
+            Enrollment enrollment = Enrollment.create(otherClassmate, klass, EnrollmentStatus.PENDING);
             ReflectionTestUtils.setField(enrollment, "id", 1L);
 
             given(accountRepository.getReferenceById(1L)).willReturn(account);
@@ -176,12 +178,14 @@ class EnrollmentServiceTest {
         @Test
         @DisplayName("본인 enrollment 취소 성공")
         void cancelOwnEnrollment() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             ReflectionTestUtils.setField(enrollment, "id", 1L);
 
             given(accountRepository.getReferenceById(1L)).willReturn(account);
             given(classmateRepository.findByAccount(account)).willReturn(Optional.of(classmate));
             given(enrollmentRepository.findById(1L)).willReturn(Optional.of(enrollment));
+            given(enrollmentRepository.findFirstByKlassAndStatusOrderByEnrolledAtAsc(
+                    klass, EnrollmentStatus.WAITLISTED)).willReturn(Optional.empty());
 
             enrollmentService.cancel(1L, 1L);
 
@@ -191,7 +195,7 @@ class EnrollmentServiceTest {
         @Test
         @DisplayName("타인의 enrollment 취소 시 예외")
         void cancelOtherEnrollmentThrows() {
-            Enrollment enrollment = Enrollment.create(otherClassmate, klass);
+            Enrollment enrollment = Enrollment.create(otherClassmate, klass, EnrollmentStatus.PENDING);
             ReflectionTestUtils.setField(enrollment, "id", 1L);
 
             given(accountRepository.getReferenceById(1L)).willReturn(account);

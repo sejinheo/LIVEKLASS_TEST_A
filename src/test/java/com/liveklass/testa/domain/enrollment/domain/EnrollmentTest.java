@@ -40,7 +40,7 @@ class EnrollmentTest {
         @Test
         @DisplayName("PENDING 상태로 생성된다")
         void createWithPendingStatus() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
 
             assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
             assertThat(enrollment.getClassmate()).isEqualTo(classmate);
@@ -56,7 +56,7 @@ class EnrollmentTest {
         @Test
         @DisplayName("PENDING → CONFIRMED 전이 성공")
         void confirmFromPending() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
 
             enrollment.confirm();
 
@@ -67,7 +67,7 @@ class EnrollmentTest {
         @Test
         @DisplayName("CANCELLED 상태에서 confirm 시 예외")
         void confirmFromCancelledThrows() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             enrollment.cancel();
 
             assertThatThrownBy(enrollment::confirm)
@@ -82,7 +82,7 @@ class EnrollmentTest {
         @Test
         @DisplayName("PENDING → CANCELLED 전이 성공")
         void cancelFromPending() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
 
             enrollment.cancel();
 
@@ -93,7 +93,7 @@ class EnrollmentTest {
         @Test
         @DisplayName("CONFIRMED → CANCELLED 전이 성공 (7일 이내)")
         void cancelFromConfirmedWithinPeriod() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             enrollment.confirm();
 
             enrollment.cancel();
@@ -104,7 +104,7 @@ class EnrollmentTest {
         @Test
         @DisplayName("CONFIRMED 후 7일 초과 시 취소 불가")
         void cancelFromConfirmedAfterPeriodThrows() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             enrollment.confirm();
             ReflectionTestUtils.setField(enrollment, "confirmedAt",
                     LocalDateTime.now().minusDays(8));
@@ -116,7 +116,7 @@ class EnrollmentTest {
         @Test
         @DisplayName("이미 CANCELLED 상태에서 cancel 시 예외")
         void cancelFromCancelledThrows() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             enrollment.cancel();
 
             assertThatThrownBy(enrollment::cancel)
@@ -131,7 +131,7 @@ class EnrollmentTest {
         @Test
         @DisplayName("본인 enrollment이면 true")
         void ownedByOwner() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
 
             assertThat(enrollment.isOwnedBy(classmate)).isTrue();
         }
@@ -139,7 +139,7 @@ class EnrollmentTest {
         @Test
         @DisplayName("타인이면 false")
         void notOwnedByOther() {
-            Enrollment enrollment = Enrollment.create(classmate, klass);
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
 
             assertThat(enrollment.isOwnedBy(otherClassmate)).isFalse();
         }

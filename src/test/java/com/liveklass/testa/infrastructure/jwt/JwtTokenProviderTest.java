@@ -12,9 +12,9 @@ class JwtTokenProviderTest {
 
     @BeforeEach
     void setUp() {
-        String secret = "test-secret-key-must-be-at-least-32-bytes-long";
-        long expirationMs = 3600000;
-        jwtTokenProvider = new JwtTokenProvider(secret, expirationMs);
+        JwtProperties jwtProperties = new JwtProperties(
+                "test-secret-key-must-be-at-least-32-bytes-long", 3600000);
+        jwtTokenProvider = new JwtTokenProvider(jwtProperties);
     }
 
     @Test
