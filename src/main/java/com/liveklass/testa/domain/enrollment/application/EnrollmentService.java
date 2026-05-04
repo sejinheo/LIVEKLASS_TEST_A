@@ -4,7 +4,11 @@ import com.liveklass.testa.domain.auth.domain.Account;
 import com.liveklass.testa.domain.auth.repository.AccountRepository;
 import com.liveklass.testa.domain.classmate.domain.Classmate;
 import com.liveklass.testa.domain.classmate.repository.ClassmateRepository;
+import com.liveklass.testa.domain.enrollment.controller.dto.ClassEnrollmentResponse;
 import com.liveklass.testa.domain.enrollment.controller.dto.EnrollmentResponse;
+import com.liveklass.testa.domain.creator.domain.Creator;
+import com.liveklass.testa.domain.creator.repository.CreatorRepository;
+import com.liveklass.testa.domain.klass.exception.KlassAccessDeniedException;
 import com.liveklass.testa.domain.enrollment.domain.Enrollment;
 import com.liveklass.testa.domain.enrollment.domain.EnrollmentStatus;
 import com.liveklass.testa.domain.enrollment.exception.ClassCapacityExceededException;
@@ -15,6 +19,7 @@ import com.liveklass.testa.domain.enrollment.exception.EnrollmentAccessDeniedExc
 import com.liveklass.testa.domain.enrollment.exception.EnrollmentNotFoundException;
 import com.liveklass.testa.domain.enrollment.repository.EnrollmentRepository;
 import com.liveklass.testa.domain.klass.domain.Klass;
+import com.liveklass.testa.domain.klass.exception.CreatorNotFoundException;
 import com.liveklass.testa.domain.klass.exception.KlassNotFoundException;
 import com.liveklass.testa.domain.klass.repository.KlassRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +34,7 @@ public class EnrollmentService implements EnrollmentUseCase {
 
     private final AccountRepository accountRepository;
     private final ClassmateRepository classmateRepository;
+    private final CreatorRepository creatorRepository;
     private final KlassRepository klassRepository;
     private final EnrollmentRepository enrollmentRepository;
 
@@ -102,6 +108,25 @@ public class EnrollmentService implements EnrollmentUseCase {
 
         return enrollmentRepository.findByClassmate(classmate).stream()
                 .map(EnrollmentResponse::from)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ClassEnrollmentResponse> findClassEnrollments(Long accountId, Long classId) {
+        Account account = accountRepository.getReferenceById(accountId);
+        Creator creator = creatorRepository.findByAccount(account)
+                .orElseThrow(CreatorNotFoundException::new);
+
+        Klass klass = klassRepository.findById(classId)
+                .orElseThrow(KlassNotFoundException::new);
+
+        if (!klass.isOwnedBy(creator)) {
+            throw new KlassAccessDeniedException();
+        }
+
+        return enrollmentRepository.findByKlassAndStatusNot(klass, EnrollmentStatus.CANCELLED).stream()
+                .map(ClassEnrollmentResponse::from)
                 .toList();
     }
 }

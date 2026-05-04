@@ -1,6 +1,7 @@
 package com.liveklass.testa.domain.enrollment.controller;
 
 import com.liveklass.testa.domain.enrollment.application.EnrollmentUseCase;
+import com.liveklass.testa.domain.enrollment.controller.dto.ClassEnrollmentResponse;
 import com.liveklass.testa.domain.enrollment.controller.dto.EnrollmentResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -45,5 +46,13 @@ public class EnrollmentController {
     @GetMapping("/enrollments/me")
     public ResponseEntity<List<EnrollmentResponse>> findMyEnrollments(@AuthenticationPrincipal Long accountId) {
         return ResponseEntity.ok(enrollmentUseCase.findMyEnrollments(accountId));
+    }
+
+    @PreAuthorize("hasRole('CREATOR')")
+    @GetMapping("/classes/{classId}/enrollments")
+    public ResponseEntity<List<ClassEnrollmentResponse>> findClassEnrollments(
+            @AuthenticationPrincipal Long accountId,
+            @PathVariable Long classId) {
+        return ResponseEntity.ok(enrollmentUseCase.findClassEnrollments(accountId, classId));
     }
 }
