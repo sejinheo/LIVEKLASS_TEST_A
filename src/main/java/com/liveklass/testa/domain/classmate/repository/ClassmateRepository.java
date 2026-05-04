@@ -4,7 +4,11 @@ import com.liveklass.testa.domain.auth.domain.Account;
 import com.liveklass.testa.domain.classmate.domain.Classmate;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface ClassmateRepository extends JpaRepository<Classmate, Long> {
 
     boolean existsByAccount(Account account);
+
+    Optional<Classmate> findByAccount(Account account);
 }
