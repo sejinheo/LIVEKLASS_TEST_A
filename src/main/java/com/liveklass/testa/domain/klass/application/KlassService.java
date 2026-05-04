@@ -5,7 +5,9 @@ import com.liveklass.testa.domain.auth.repository.AccountRepository;
 import com.liveklass.testa.domain.creator.domain.Creator;
 import com.liveklass.testa.domain.creator.repository.CreatorRepository;
 import com.liveklass.testa.domain.klass.controller.dto.KlassCreateRequest;
+import com.liveklass.testa.domain.klass.controller.dto.KlassResponse;
 import com.liveklass.testa.domain.klass.controller.dto.KlassStatusUpdateRequest;
+import com.liveklass.testa.domain.klass.domain.ClassStatus;
 import com.liveklass.testa.domain.klass.domain.Klass;
 import com.liveklass.testa.domain.klass.exception.CreatorNotFoundException;
 import com.liveklass.testa.domain.klass.exception.KlassAccessDeniedException;
@@ -14,6 +16,8 @@ import com.liveklass.testa.domain.klass.repository.KlassRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -58,5 +62,20 @@ public class KlassService implements KlassUseCase {
         }
 
         klass.changeStatus(request.status());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<KlassResponse> findAll(ClassStatus status) {
+        List<Klass> classes;
+        if (status != null) {
+            classes = klassRepository.findByStatus(status);
+        } else {
+            classes = klassRepository.findAll();
+        }
+
+        return classes.stream()
+                .map(KlassResponse::from)
+                .toList();
     }
 }
