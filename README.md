@@ -27,34 +27,38 @@
 
 ## 실행 방법
 
-### 1. 사전 준비
+### 사전 준비
 
-- Java 21
 - Docker & Docker Compose
 
-### 2. 데이터베이스 실행
+### 실행
 
-프로젝트 루트에 `.env` 파일을 생성합니다:
+프로젝트 루트에 `.env` 파일을 생성합니다 (`.env.example` 참고):
 
 ```
 POSTGRES_DB=testa
 POSTGRES_USER=testa
 POSTGRES_PASSWORD=testa1234
+JWT_SECRET=your-secret-key-must-be-at-least-32-bytes-long
+JWT_EXPIRATION_MS=3600000
 ```
 
-Docker Compose로 PostgreSQL을 실행합니다:
+Docker Compose로 전체 스택(PostgreSQL + 애플리케이션)을 실행합니다:
 
 ```bash
-docker compose up -d
-```
-
-### 3. 애플리케이션 실행
-
-```bash
-./gradlew bootRun
+docker compose up --build -d
 ```
 
 서버가 `http://localhost:8080/api` 에서 실행됩니다.
+
+### 로컬 개발 (Docker 없이)
+
+Java 21이 필요합니다. PostgreSQL만 Docker로 실행하고 앱은 로컬에서 실행할 수 있습니다:
+
+```bash
+docker compose up postgres -d
+./gradlew bootRun
+```
 
 ## API 목록 및 예시
 
