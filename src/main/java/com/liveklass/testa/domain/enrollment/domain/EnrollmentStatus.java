@@ -3,6 +3,7 @@ package com.liveklass.testa.domain.enrollment.domain;
 import java.util.Set;
 
 public enum EnrollmentStatus {
+    WAITLISTED(Set.of("PENDING", "CANCELLED")),
     PENDING(Set.of("CONFIRMED", "CANCELLED")),
     CONFIRMED(Set.of("CANCELLED")),
     CANCELLED(Set.of());
