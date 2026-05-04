@@ -32,4 +32,12 @@ public class EnrollmentController {
         enrollmentUseCase.confirm(accountId, enrollmentId);
         return ResponseEntity.ok().build();
     }
+
+    @PreAuthorize("hasRole('CLASSMATE')")
+    @PatchMapping("/enrollments/{enrollmentId}/cancel")
+    public ResponseEntity<Void> cancel(@AuthenticationPrincipal Long accountId,
+                                       @PathVariable Long enrollmentId) {
+        enrollmentUseCase.cancel(accountId, enrollmentId);
+        return ResponseEntity.ok().build();
+    }
 }

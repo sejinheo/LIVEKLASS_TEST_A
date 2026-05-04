@@ -72,4 +72,21 @@ public class EnrollmentService implements EnrollmentUseCase {
 
         enrollment.confirm();
     }
+
+    @Override
+    @Transactional
+    public void cancel(Long accountId, Long enrollmentId) {
+        Account account = accountRepository.getReferenceById(accountId);
+        Classmate classmate = classmateRepository.findByAccount(account)
+                .orElseThrow(ClassmateNotFoundException::new);
+
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(EnrollmentNotFoundException::new);
+
+        if (!enrollment.isOwnedBy(classmate)) {
+            throw new EnrollmentAccessDeniedException();
+        }
+
+        enrollment.cancel();
+    }
 }
