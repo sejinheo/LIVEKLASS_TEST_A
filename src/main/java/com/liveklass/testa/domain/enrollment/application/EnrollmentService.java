@@ -4,6 +4,7 @@ import com.liveklass.testa.domain.auth.domain.Account;
 import com.liveklass.testa.domain.auth.repository.AccountRepository;
 import com.liveklass.testa.domain.classmate.domain.Classmate;
 import com.liveklass.testa.domain.classmate.repository.ClassmateRepository;
+import com.liveklass.testa.domain.enrollment.controller.dto.EnrollmentResponse;
 import com.liveklass.testa.domain.enrollment.domain.Enrollment;
 import com.liveklass.testa.domain.enrollment.domain.EnrollmentStatus;
 import com.liveklass.testa.domain.enrollment.exception.ClassCapacityExceededException;
@@ -19,6 +20,8 @@ import com.liveklass.testa.domain.klass.repository.KlassRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -88,5 +91,17 @@ public class EnrollmentService implements EnrollmentUseCase {
         }
 
         enrollment.cancel();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EnrollmentResponse> findMyEnrollments(Long accountId) {
+        Account account = accountRepository.getReferenceById(accountId);
+        Classmate classmate = classmateRepository.findByAccount(account)
+                .orElseThrow(ClassmateNotFoundException::new);
+
+        return enrollmentRepository.findByClassmate(classmate).stream()
+                .map(EnrollmentResponse::from)
+                .toList();
     }
 }
