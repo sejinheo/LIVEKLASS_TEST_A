@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
-    boolean existsByClassmateAndKlass(Classmate classmate, Klass klass);
+    boolean existsByClassmateAndKlassAndStatusNot(Classmate classmate, Klass klass, EnrollmentStatus status);
 
     List<Enrollment> findByClassmate(Classmate classmate);
 

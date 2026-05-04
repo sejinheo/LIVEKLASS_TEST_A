@@ -46,7 +46,7 @@ public class EnrollmentService implements EnrollmentUseCase {
             throw new ClassNotOpenException();
         }
 
-        if (enrollmentRepository.existsByClassmateAndKlass(classmate, klass)) {
+        if (enrollmentRepository.existsByClassmateAndKlassAndStatusNot(classmate, klass, EnrollmentStatus.CANCELLED)) {
             throw new DuplicateEnrollmentException();
         }
 
