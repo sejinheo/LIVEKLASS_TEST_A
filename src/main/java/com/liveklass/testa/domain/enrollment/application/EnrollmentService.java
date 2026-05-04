@@ -103,11 +103,14 @@ public class EnrollmentService implements EnrollmentUseCase {
             throw new EnrollmentAccessDeniedException();
         }
 
+        Klass klass = klassRepository.findByIdWithLock(enrollment.getKlass().getId())
+                .orElseThrow(KlassNotFoundException::new);
+
         EnrollmentStatus previousStatus = enrollment.getStatus();
         enrollment.cancel();
 
         if (previousStatus == EnrollmentStatus.PENDING || previousStatus == EnrollmentStatus.CONFIRMED) {
-            promoteNextWaitlisted(enrollment.getKlass());
+            promoteNextWaitlisted(klass);
         }
     }
 
