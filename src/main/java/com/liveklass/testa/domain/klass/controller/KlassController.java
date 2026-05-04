@@ -2,6 +2,7 @@ package com.liveklass.testa.domain.klass.controller;
 
 import com.liveklass.testa.domain.klass.application.KlassUseCase;
 import com.liveklass.testa.domain.klass.controller.dto.KlassCreateRequest;
+import com.liveklass.testa.domain.klass.controller.dto.KlassDetailResponse;
 import com.liveklass.testa.domain.klass.controller.dto.KlassResponse;
 import com.liveklass.testa.domain.klass.controller.dto.KlassStatusUpdateRequest;
 import com.liveklass.testa.domain.klass.domain.ClassStatus;
@@ -42,5 +43,10 @@ public class KlassController {
     @GetMapping
     public ResponseEntity<List<KlassResponse>> findAll(@RequestParam(required = false) ClassStatus status) {
         return ResponseEntity.ok(klassUseCase.findAll(status));
+    }
+
+    @GetMapping("/{classId}")
+    public ResponseEntity<KlassDetailResponse> findById(@PathVariable Long classId) {
+        return ResponseEntity.ok(klassUseCase.findById(classId));
     }
 }

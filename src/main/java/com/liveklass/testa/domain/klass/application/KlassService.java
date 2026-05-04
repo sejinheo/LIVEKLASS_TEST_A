@@ -5,6 +5,7 @@ import com.liveklass.testa.domain.auth.repository.AccountRepository;
 import com.liveklass.testa.domain.creator.domain.Creator;
 import com.liveklass.testa.domain.creator.repository.CreatorRepository;
 import com.liveklass.testa.domain.klass.controller.dto.KlassCreateRequest;
+import com.liveklass.testa.domain.klass.controller.dto.KlassDetailResponse;
 import com.liveklass.testa.domain.klass.controller.dto.KlassResponse;
 import com.liveklass.testa.domain.klass.controller.dto.KlassStatusUpdateRequest;
 import com.liveklass.testa.domain.klass.domain.ClassStatus;
@@ -77,5 +78,17 @@ public class KlassService implements KlassUseCase {
         return classes.stream()
                 .map(KlassResponse::from)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public KlassDetailResponse findById(Long classId) {
+        Klass klass = klassRepository.findById(classId)
+                .orElseThrow(KlassNotFoundException::new);
+
+        // TODO: Enrollment 구현 시 실제 신청 인원으로 교체
+        int currentEnrollment = 0;
+
+        return KlassDetailResponse.of(klass, currentEnrollment);
     }
 }
