@@ -10,6 +10,8 @@ import com.liveklass.testa.domain.enrollment.exception.ClassCapacityExceededExce
 import com.liveklass.testa.domain.enrollment.exception.ClassNotOpenException;
 import com.liveklass.testa.domain.enrollment.exception.ClassmateNotFoundException;
 import com.liveklass.testa.domain.enrollment.exception.DuplicateEnrollmentException;
+import com.liveklass.testa.domain.enrollment.exception.EnrollmentAccessDeniedException;
+import com.liveklass.testa.domain.enrollment.exception.EnrollmentNotFoundException;
 import com.liveklass.testa.domain.enrollment.repository.EnrollmentRepository;
 import com.liveklass.testa.domain.klass.domain.Klass;
 import com.liveklass.testa.domain.klass.exception.KlassNotFoundException;
@@ -52,5 +54,22 @@ public class EnrollmentService implements EnrollmentUseCase {
 
         Enrollment enrollment = Enrollment.create(classmate, klass);
         enrollmentRepository.save(enrollment);
+    }
+
+    @Override
+    @Transactional
+    public void confirm(Long accountId, Long enrollmentId) {
+        Account account = accountRepository.getReferenceById(accountId);
+        Classmate classmate = classmateRepository.findByAccount(account)
+                .orElseThrow(ClassmateNotFoundException::new);
+
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(EnrollmentNotFoundException::new);
+
+        if (!enrollment.isOwnedBy(classmate)) {
+            throw new EnrollmentAccessDeniedException();
+        }
+
+        enrollment.confirm();
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,5 +23,13 @@ public class EnrollmentController {
                                        @PathVariable Long classId) {
         enrollmentUseCase.enroll(accountId, classId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PreAuthorize("hasRole('CLASSMATE')")
+    @PatchMapping("/enrollments/{enrollmentId}/confirm")
+    public ResponseEntity<Void> confirm(@AuthenticationPrincipal Long accountId,
+                                        @PathVariable Long enrollmentId) {
+        enrollmentUseCase.confirm(accountId, enrollmentId);
+        return ResponseEntity.ok().build();
     }
 }
