@@ -14,6 +14,8 @@ import com.liveklass.testa.domain.klass.exception.CreatorNotFoundException;
 import com.liveklass.testa.domain.klass.exception.KlassAccessDeniedException;
 import com.liveklass.testa.domain.klass.exception.KlassNotFoundException;
 import com.liveklass.testa.domain.klass.repository.KlassRepository;
+import com.liveklass.testa.domain.enrollment.domain.EnrollmentStatus;
+import com.liveklass.testa.domain.enrollment.repository.EnrollmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ public class KlassService implements KlassUseCase {
     private final AccountRepository accountRepository;
     private final CreatorRepository creatorRepository;
     private final KlassRepository klassRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     @Override
     @Transactional
@@ -86,8 +89,7 @@ public class KlassService implements KlassUseCase {
         Klass klass = klassRepository.findById(classId)
                 .orElseThrow(KlassNotFoundException::new);
 
-        // TODO: Enrollment 구현 시 실제 신청 인원으로 교체
-        int currentEnrollment = 0;
+        int currentEnrollment = enrollmentRepository.countByKlassAndStatusNot(klass, EnrollmentStatus.CANCELLED);
 
         return KlassDetailResponse.of(klass, currentEnrollment);
     }

@@ -92,6 +92,10 @@ public class Klass extends BaseTimeEntity {
         this.status = target;
     }
 
+    public boolean isOpen() {
+        return this.status == ClassStatus.OPEN;
+    }
+
     public boolean isOwnedBy(Creator creator) {
         return this.creator.getId().equals(creator.getId());
     }
