@@ -1,6 +1,7 @@
 package com.liveklass.testa.domain.enrollment.domain;
 
 import com.liveklass.testa.domain.classmate.domain.Classmate;
+import com.liveklass.testa.domain.enrollment.exception.CancellationPeriodExpiredException;
 import com.liveklass.testa.domain.enrollment.exception.InvalidEnrollmentStatusException;
 import com.liveklass.testa.domain.klass.domain.Klass;
 import com.liveklass.testa.global.entity.BaseTimeEntity;
@@ -10,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "enrollments")
@@ -56,10 +58,22 @@ public class Enrollment extends BaseTimeEntity {
         this.confirmedAt = LocalDateTime.now();
     }
 
+    private static final int CANCELLATION_PERIOD_DAYS = 7;
+
     public void cancel() {
         validateStatusTransition(EnrollmentStatus.CANCELLED);
+        validateCancellationPeriod();
         this.status = EnrollmentStatus.CANCELLED;
         this.cancelledAt = LocalDateTime.now();
+    }
+
+    private void validateCancellationPeriod() {
+        if (this.status == EnrollmentStatus.CONFIRMED && this.confirmedAt != null) {
+            long daysSinceConfirmed = ChronoUnit.DAYS.between(this.confirmedAt, LocalDateTime.now());
+            if (daysSinceConfirmed > CANCELLATION_PERIOD_DAYS) {
+                throw new CancellationPeriodExpiredException();
+            }
+        }
     }
 
     public boolean isOwnedBy(Classmate classmate) {
