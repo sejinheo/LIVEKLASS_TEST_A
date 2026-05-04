@@ -83,6 +83,7 @@ class EnrollmentServiceTest {
         @Test
         @DisplayName("정원 내 신청 시 PENDING 상태로 저장")
         void enrollWithinCapacity() {
+            // given
             given(accountRepository.getReferenceById(1L)).willReturn(account);
             given(classmateRepository.findByAccount(account)).willReturn(Optional.of(classmate));
             given(klassRepository.findByIdWithLock(1L)).willReturn(Optional.of(klass));
@@ -91,8 +92,10 @@ class EnrollmentServiceTest {
             given(enrollmentRepository.countByKlassAndStatusIn(klass,
                     List.of(EnrollmentStatus.PENDING, EnrollmentStatus.CONFIRMED))).willReturn(0);
 
+            // when
             enrollmentService.enroll(1L, 1L);
 
+            // then
             ArgumentCaptor<Enrollment> captor = ArgumentCaptor.forClass(Enrollment.class);
             verify(enrollmentRepository).save(captor.capture());
             assertThat(captor.getValue().getStatus()).isEqualTo(EnrollmentStatus.PENDING);
@@ -101,6 +104,7 @@ class EnrollmentServiceTest {
         @Test
         @DisplayName("OPEN 아닌 강의 신청 시 예외")
         void enrollToNonOpenClassThrows() {
+            // given
             Klass draftKlass = Klass.create(null, "Draft강의", "설명", 10000, 10,
                     LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 30));
 
@@ -108,6 +112,7 @@ class EnrollmentServiceTest {
             given(classmateRepository.findByAccount(account)).willReturn(Optional.of(classmate));
             given(klassRepository.findByIdWithLock(1L)).willReturn(Optional.of(draftKlass));
 
+            // when & then
             assertThatThrownBy(() -> enrollmentService.enroll(1L, 1L))
                     .isInstanceOf(ClassNotOpenException.class);
         }
@@ -115,12 +120,14 @@ class EnrollmentServiceTest {
         @Test
         @DisplayName("중복 신청 시 예외")
         void duplicateEnrollmentThrows() {
+            // given
             given(accountRepository.getReferenceById(1L)).willReturn(account);
             given(classmateRepository.findByAccount(account)).willReturn(Optional.of(classmate));
             given(klassRepository.findByIdWithLock(1L)).willReturn(Optional.of(klass));
             given(enrollmentRepository.existsByClassmateAndKlassAndStatusNot(
                     classmate, klass, EnrollmentStatus.CANCELLED)).willReturn(true);
 
+            // when & then
             assertThatThrownBy(() -> enrollmentService.enroll(1L, 1L))
                     .isInstanceOf(DuplicateEnrollmentException.class);
         }
@@ -133,6 +140,7 @@ class EnrollmentServiceTest {
         @Test
         @DisplayName("본인 enrollment 확정 성공")
         void confirmOwnEnrollment() {
+            // given
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             ReflectionTestUtils.setField(enrollment, "id", 1L);
 
@@ -140,14 +148,17 @@ class EnrollmentServiceTest {
             given(classmateRepository.findByAccount(account)).willReturn(Optional.of(classmate));
             given(enrollmentRepository.findById(1L)).willReturn(Optional.of(enrollment));
 
+            // when
             enrollmentService.confirm(1L, 1L);
 
+            // then
             assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CONFIRMED);
         }
 
         @Test
         @DisplayName("타인의 enrollment 확정 시 예외")
         void confirmOtherEnrollmentThrows() {
+            // given
             Enrollment enrollment = Enrollment.create(otherClassmate, klass, EnrollmentStatus.PENDING);
             ReflectionTestUtils.setField(enrollment, "id", 1L);
 
@@ -155,6 +166,7 @@ class EnrollmentServiceTest {
             given(classmateRepository.findByAccount(account)).willReturn(Optional.of(classmate));
             given(enrollmentRepository.findById(1L)).willReturn(Optional.of(enrollment));
 
+            // when & then
             assertThatThrownBy(() -> enrollmentService.confirm(1L, 1L))
                     .isInstanceOf(EnrollmentAccessDeniedException.class);
         }
@@ -162,10 +174,12 @@ class EnrollmentServiceTest {
         @Test
         @DisplayName("존재하지 않는 enrollment 확정 시 예외")
         void confirmNonExistentThrows() {
+            // given
             given(accountRepository.getReferenceById(1L)).willReturn(account);
             given(classmateRepository.findByAccount(account)).willReturn(Optional.of(classmate));
             given(enrollmentRepository.findById(999L)).willReturn(Optional.empty());
 
+            // when & then
             assertThatThrownBy(() -> enrollmentService.confirm(1L, 999L))
                     .isInstanceOf(EnrollmentNotFoundException.class);
         }
@@ -178,6 +192,7 @@ class EnrollmentServiceTest {
         @Test
         @DisplayName("본인 enrollment 취소 성공")
         void cancelOwnEnrollment() {
+            // given
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             ReflectionTestUtils.setField(enrollment, "id", 1L);
 
@@ -187,14 +202,17 @@ class EnrollmentServiceTest {
             given(enrollmentRepository.findFirstByKlassAndStatusOrderByEnrolledAtAsc(
                     klass, EnrollmentStatus.WAITLISTED)).willReturn(Optional.empty());
 
+            // when
             enrollmentService.cancel(1L, 1L);
 
+            // then
             assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
         }
 
         @Test
         @DisplayName("타인의 enrollment 취소 시 예외")
         void cancelOtherEnrollmentThrows() {
+            // given
             Enrollment enrollment = Enrollment.create(otherClassmate, klass, EnrollmentStatus.PENDING);
             ReflectionTestUtils.setField(enrollment, "id", 1L);
 
@@ -202,6 +220,7 @@ class EnrollmentServiceTest {
             given(classmateRepository.findByAccount(account)).willReturn(Optional.of(classmate));
             given(enrollmentRepository.findById(1L)).willReturn(Optional.of(enrollment));
 
+            // when & then
             assertThatThrownBy(() -> enrollmentService.cancel(1L, 1L))
                     .isInstanceOf(EnrollmentAccessDeniedException.class);
         }

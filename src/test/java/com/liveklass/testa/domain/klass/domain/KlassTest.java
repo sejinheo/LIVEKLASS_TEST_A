@@ -20,15 +20,18 @@ class KlassTest {
         @Test
         @DisplayName("DRAFT 상태로 생성된다")
         void createWithDraftStatus() {
+            // given & when
             Klass klass = Klass.create(null, "강의", "설명", 10000, 10,
                     LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 30));
 
+            // then
             assertThat(klass.getStatus()).isEqualTo(ClassStatus.DRAFT);
         }
 
         @Test
         @DisplayName("가격이 음수이면 예외")
         void negativePriceThrows() {
+            // given & when & then
             assertThatThrownBy(() -> Klass.create(null, "강의", "설명", -1, 10,
                     LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 30)))
                     .isInstanceOf(InvalidKlassException.class);
@@ -37,6 +40,7 @@ class KlassTest {
         @Test
         @DisplayName("정원이 0이면 예외")
         void zeroCapacityThrows() {
+            // given & when & then
             assertThatThrownBy(() -> Klass.create(null, "강의", "설명", 10000, 0,
                     LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 30)))
                     .isInstanceOf(InvalidKlassException.class);
@@ -45,6 +49,7 @@ class KlassTest {
         @Test
         @DisplayName("종료일이 시작일보다 앞이면 예외")
         void endDateBeforeStartDateThrows() {
+            // given & when & then
             assertThatThrownBy(() -> Klass.create(null, "강의", "설명", 10000, 10,
                     LocalDate.of(2026, 6, 30), LocalDate.of(2026, 6, 1)))
                     .isInstanceOf(InvalidKlassException.class);
@@ -58,29 +63,37 @@ class KlassTest {
         @Test
         @DisplayName("DRAFT → OPEN 전이 성공")
         void draftToOpen() {
+            // given
             Klass klass = createDefaultKlass();
 
+            // when
             klass.changeStatus(ClassStatus.OPEN);
 
+            // then
             assertThat(klass.getStatus()).isEqualTo(ClassStatus.OPEN);
         }
 
         @Test
         @DisplayName("OPEN → CLOSED 전이 성공")
         void openToClosed() {
+            // given
             Klass klass = createDefaultKlass();
             klass.changeStatus(ClassStatus.OPEN);
 
+            // when
             klass.changeStatus(ClassStatus.CLOSED);
 
+            // then
             assertThat(klass.getStatus()).isEqualTo(ClassStatus.CLOSED);
         }
 
         @Test
         @DisplayName("DRAFT → CLOSED 전이 불가")
         void draftToClosedThrows() {
+            // given
             Klass klass = createDefaultKlass();
 
+            // when & then
             assertThatThrownBy(() -> klass.changeStatus(ClassStatus.CLOSED))
                     .isInstanceOf(InvalidStatusTransitionException.class);
         }
@@ -88,10 +101,12 @@ class KlassTest {
         @Test
         @DisplayName("CLOSED → OPEN 전이 불가")
         void closedToOpenThrows() {
+            // given
             Klass klass = createDefaultKlass();
             klass.changeStatus(ClassStatus.OPEN);
             klass.changeStatus(ClassStatus.CLOSED);
 
+            // when & then
             assertThatThrownBy(() -> klass.changeStatus(ClassStatus.OPEN))
                     .isInstanceOf(InvalidStatusTransitionException.class);
         }
@@ -104,18 +119,28 @@ class KlassTest {
         @Test
         @DisplayName("OPEN 상태이면 true")
         void openReturnsTrue() {
+            // given
             Klass klass = createDefaultKlass();
             klass.changeStatus(ClassStatus.OPEN);
 
-            assertThat(klass.isOpen()).isTrue();
+            // when
+            boolean result = klass.isOpen();
+
+            // then
+            assertThat(result).isTrue();
         }
 
         @Test
         @DisplayName("DRAFT 상태이면 false")
         void draftReturnsFalse() {
+            // given
             Klass klass = createDefaultKlass();
 
-            assertThat(klass.isOpen()).isFalse();
+            // when
+            boolean result = klass.isOpen();
+
+            // then
+            assertThat(result).isFalse();
         }
     }
 

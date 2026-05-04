@@ -15,13 +15,27 @@ class EnrollmentStatusTest {
         @Test
         @DisplayName("CONFIRMED로 전이 가능")
         void canTransitionToConfirmed() {
-            assertThat(EnrollmentStatus.PENDING.canTransitionTo(EnrollmentStatus.CONFIRMED)).isTrue();
+            // given
+            EnrollmentStatus status = EnrollmentStatus.PENDING;
+
+            // when
+            boolean result = status.canTransitionTo(EnrollmentStatus.CONFIRMED);
+
+            // then
+            assertThat(result).isTrue();
         }
 
         @Test
         @DisplayName("CANCELLED로 전이 가능")
         void canTransitionToCancelled() {
-            assertThat(EnrollmentStatus.PENDING.canTransitionTo(EnrollmentStatus.CANCELLED)).isTrue();
+            // given
+            EnrollmentStatus status = EnrollmentStatus.PENDING;
+
+            // when
+            boolean result = status.canTransitionTo(EnrollmentStatus.CANCELLED);
+
+            // then
+            assertThat(result).isTrue();
         }
     }
 
@@ -32,13 +46,27 @@ class EnrollmentStatusTest {
         @Test
         @DisplayName("CANCELLED로 전이 가능")
         void canTransitionToCancelled() {
-            assertThat(EnrollmentStatus.CONFIRMED.canTransitionTo(EnrollmentStatus.CANCELLED)).isTrue();
+            // given
+            EnrollmentStatus status = EnrollmentStatus.CONFIRMED;
+
+            // when
+            boolean result = status.canTransitionTo(EnrollmentStatus.CANCELLED);
+
+            // then
+            assertThat(result).isTrue();
         }
 
         @Test
         @DisplayName("PENDING으로 전이 불가")
         void cannotTransitionToPending() {
-            assertThat(EnrollmentStatus.CONFIRMED.canTransitionTo(EnrollmentStatus.PENDING)).isFalse();
+            // given
+            EnrollmentStatus status = EnrollmentStatus.CONFIRMED;
+
+            // when
+            boolean result = status.canTransitionTo(EnrollmentStatus.PENDING);
+
+            // then
+            assertThat(result).isFalse();
         }
     }
 
@@ -49,13 +77,27 @@ class EnrollmentStatusTest {
         @Test
         @DisplayName("PENDING으로 전이 불가")
         void cannotTransitionToPending() {
-            assertThat(EnrollmentStatus.CANCELLED.canTransitionTo(EnrollmentStatus.PENDING)).isFalse();
+            // given
+            EnrollmentStatus status = EnrollmentStatus.CANCELLED;
+
+            // when
+            boolean result = status.canTransitionTo(EnrollmentStatus.PENDING);
+
+            // then
+            assertThat(result).isFalse();
         }
 
         @Test
         @DisplayName("CONFIRMED로 전이 불가")
         void cannotTransitionToConfirmed() {
-            assertThat(EnrollmentStatus.CANCELLED.canTransitionTo(EnrollmentStatus.CONFIRMED)).isFalse();
+            // given
+            EnrollmentStatus status = EnrollmentStatus.CANCELLED;
+
+            // when
+            boolean result = status.canTransitionTo(EnrollmentStatus.CONFIRMED);
+
+            // then
+            assertThat(result).isFalse();
         }
     }
 }

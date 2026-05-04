@@ -40,8 +40,10 @@ class EnrollmentTest {
         @Test
         @DisplayName("PENDING 상태로 생성된다")
         void createWithPendingStatus() {
+            // given & when
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
 
+            // then
             assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
             assertThat(enrollment.getClassmate()).isEqualTo(classmate);
             assertThat(enrollment.getKlass()).isEqualTo(klass);
@@ -56,10 +58,13 @@ class EnrollmentTest {
         @Test
         @DisplayName("PENDING → CONFIRMED 전이 성공")
         void confirmFromPending() {
+            // given
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
 
+            // when
             enrollment.confirm();
 
+            // then
             assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CONFIRMED);
             assertThat(enrollment.getConfirmedAt()).isNotNull();
         }
@@ -67,9 +72,11 @@ class EnrollmentTest {
         @Test
         @DisplayName("CANCELLED 상태에서 confirm 시 예외")
         void confirmFromCancelledThrows() {
+            // given
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             enrollment.cancel();
 
+            // when & then
             assertThatThrownBy(enrollment::confirm)
                     .isInstanceOf(InvalidEnrollmentStatusException.class);
         }
@@ -82,10 +89,13 @@ class EnrollmentTest {
         @Test
         @DisplayName("PENDING → CANCELLED 전이 성공")
         void cancelFromPending() {
+            // given
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
 
+            // when
             enrollment.cancel();
 
+            // then
             assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
             assertThat(enrollment.getCancelledAt()).isNotNull();
         }
@@ -93,22 +103,27 @@ class EnrollmentTest {
         @Test
         @DisplayName("CONFIRMED → CANCELLED 전이 성공 (7일 이내)")
         void cancelFromConfirmedWithinPeriod() {
+            // given
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             enrollment.confirm();
 
+            // when
             enrollment.cancel();
 
+            // then
             assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
         }
 
         @Test
         @DisplayName("CONFIRMED 후 7일 초과 시 취소 불가")
         void cancelFromConfirmedAfterPeriodThrows() {
+            // given
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             enrollment.confirm();
             ReflectionTestUtils.setField(enrollment, "confirmedAt",
                     LocalDateTime.now().minusDays(8));
 
+            // when & then
             assertThatThrownBy(enrollment::cancel)
                     .isInstanceOf(CancellationPeriodExpiredException.class);
         }
@@ -116,9 +131,11 @@ class EnrollmentTest {
         @Test
         @DisplayName("이미 CANCELLED 상태에서 cancel 시 예외")
         void cancelFromCancelledThrows() {
+            // given
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
             enrollment.cancel();
 
+            // when & then
             assertThatThrownBy(enrollment::cancel)
                     .isInstanceOf(InvalidEnrollmentStatusException.class);
         }
@@ -131,17 +148,27 @@ class EnrollmentTest {
         @Test
         @DisplayName("본인 enrollment이면 true")
         void ownedByOwner() {
+            // given
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
 
-            assertThat(enrollment.isOwnedBy(classmate)).isTrue();
+            // when
+            boolean result = enrollment.isOwnedBy(classmate);
+
+            // then
+            assertThat(result).isTrue();
         }
 
         @Test
         @DisplayName("타인이면 false")
         void notOwnedByOther() {
+            // given
             Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
 
-            assertThat(enrollment.isOwnedBy(otherClassmate)).isFalse();
+            // when
+            boolean result = enrollment.isOwnedBy(otherClassmate);
+
+            // then
+            assertThat(result).isFalse();
         }
     }
 }

@@ -20,36 +20,65 @@ class JwtTokenProviderTest {
     @Test
     @DisplayName("생성한 토큰이 유효하다")
     void createdTokenIsValid() {
+        // given
         String token = jwtTokenProvider.createToken(1L, "test@test.com", "CREATOR");
 
-        assertThat(jwtTokenProvider.validateToken(token)).isTrue();
+        // when
+        boolean result = jwtTokenProvider.validateToken(token);
+
+        // then
+        assertThat(result).isTrue();
     }
 
     @Test
     @DisplayName("잘못된 토큰은 유효하지 않다")
     void invalidTokenReturnsFalse() {
-        assertThat(jwtTokenProvider.validateToken("invalid.token.here")).isFalse();
+        // given
+        String invalidToken = "invalid.token.here";
+
+        // when
+        boolean result = jwtTokenProvider.validateToken(invalidToken);
+
+        // then
+        assertThat(result).isFalse();
     }
 
     @Test
     @DisplayName("빈 문자열은 유효하지 않다")
     void emptyTokenReturnsFalse() {
-        assertThat(jwtTokenProvider.validateToken("")).isFalse();
+        // given
+        String emptyToken = "";
+
+        // when
+        boolean result = jwtTokenProvider.validateToken(emptyToken);
+
+        // then
+        assertThat(result).isFalse();
     }
 
     @Test
     @DisplayName("accountId를 정확히 추출한다")
     void extractsAccountId() {
+        // given
         String token = jwtTokenProvider.createToken(42L, "test@test.com", "CLASSMATE");
 
-        assertThat(jwtTokenProvider.getAccountId(token)).isEqualTo(42L);
+        // when
+        Long accountId = jwtTokenProvider.getAccountId(token);
+
+        // then
+        assertThat(accountId).isEqualTo(42L);
     }
 
     @Test
     @DisplayName("role을 정확히 추출한다")
     void extractsRole() {
+        // given
         String token = jwtTokenProvider.createToken(1L, "test@test.com", "CREATOR");
 
-        assertThat(jwtTokenProvider.getRole(token)).isEqualTo("CREATOR");
+        // when
+        String role = jwtTokenProvider.getRole(token);
+
+        // then
+        assertThat(role).isEqualTo("CREATOR");
     }
 }
