@@ -43,13 +43,18 @@ public class Enrollment extends BaseTimeEntity {
 
     private LocalDateTime cancelledAt;
 
-    public static Enrollment create(Classmate classmate, Klass klass) {
+    public static Enrollment create(Classmate classmate, Klass klass, EnrollmentStatus status) {
         Enrollment enrollment = new Enrollment();
         enrollment.classmate = classmate;
         enrollment.klass = klass;
-        enrollment.status = EnrollmentStatus.PENDING;
+        enrollment.status = status;
         enrollment.enrolledAt = LocalDateTime.now();
         return enrollment;
+    }
+
+    public void promote() {
+        validateStatusTransition(EnrollmentStatus.PENDING);
+        this.status = EnrollmentStatus.PENDING;
     }
 
     public void confirm() {

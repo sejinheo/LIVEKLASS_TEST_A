@@ -11,7 +11,6 @@ import com.liveklass.testa.domain.creator.repository.CreatorRepository;
 import com.liveklass.testa.domain.klass.exception.KlassAccessDeniedException;
 import com.liveklass.testa.domain.enrollment.domain.Enrollment;
 import com.liveklass.testa.domain.enrollment.domain.EnrollmentStatus;
-import com.liveklass.testa.domain.enrollment.exception.ClassCapacityExceededException;
 import com.liveklass.testa.domain.enrollment.exception.ClassNotOpenException;
 import com.liveklass.testa.domain.enrollment.exception.ClassmateNotFoundException;
 import com.liveklass.testa.domain.enrollment.exception.DuplicateEnrollmentException;
@@ -28,6 +27,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class EnrollmentService implements EnrollmentUseCase {
@@ -37,6 +39,9 @@ public class EnrollmentService implements EnrollmentUseCase {
     private final CreatorRepository creatorRepository;
     private final KlassRepository klassRepository;
     private final EnrollmentRepository enrollmentRepository;
+
+    private static final List<EnrollmentStatus> ACTIVE_STATUSES =
+            List.of(EnrollmentStatus.PENDING, EnrollmentStatus.CONFIRMED);
 
     @Override
     @Transactional
@@ -56,12 +61,14 @@ public class EnrollmentService implements EnrollmentUseCase {
             throw new DuplicateEnrollmentException();
         }
 
-        int currentEnrollment = enrollmentRepository.countByKlassAndStatusNot(klass, EnrollmentStatus.CANCELLED);
-        if (currentEnrollment >= klass.getMaxCapacity()) {
-            throw new ClassCapacityExceededException();
+        int activeCount = enrollmentRepository.countByKlassAndStatusIn(klass, ACTIVE_STATUSES);
+        if (activeCount >= klass.getMaxCapacity()) {
+            Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.WAITLISTED);
+            enrollmentRepository.save(enrollment);
+            return;
         }
 
-        Enrollment enrollment = Enrollment.create(classmate, klass);
+        Enrollment enrollment = Enrollment.create(classmate, klass, EnrollmentStatus.PENDING);
         enrollmentRepository.save(enrollment);
     }
 
@@ -96,7 +103,18 @@ public class EnrollmentService implements EnrollmentUseCase {
             throw new EnrollmentAccessDeniedException();
         }
 
+        EnrollmentStatus previousStatus = enrollment.getStatus();
         enrollment.cancel();
+
+        if (previousStatus == EnrollmentStatus.PENDING || previousStatus == EnrollmentStatus.CONFIRMED) {
+            promoteNextWaitlisted(enrollment.getKlass());
+        }
+    }
+
+    private void promoteNextWaitlisted(Klass klass) {
+        Optional<Enrollment> nextWaitlisted = enrollmentRepository
+                .findFirstByKlassAndStatusOrderByEnrolledAtAsc(klass, EnrollmentStatus.WAITLISTED);
+        nextWaitlisted.ifPresent(Enrollment::promote);
     }
 
     @Override
