@@ -500,7 +500,7 @@ erDiagram
 **1. 정합성 최우선 도메인**
 
 수강 신청은 결제와 직결된다. 정원 초과가 발생하면 환불/CS 이슈로 이어지므로,
-성능을 일부 희생하더라도 정합성을 보장하는 것이 올바른 선택이다.
+성능을 일부 희생하더라도 정합성을 보장하는 것이 올바른 선택이라고 생각했다.
 
 **2. 현실적 병목 수준**
 
@@ -536,16 +536,13 @@ erDiagram
 ### 2. UseCase 인터페이스 + Service 구현 패턴
 Controller가 구체 Service 클래스에 직접 의존하지 않도록 UseCase 인터페이스를 통해 의존성 역전(DIP) 적용. 테스트 시 mock 교체가 용이.
 
-### 3. 비관적 락 (Pessimistic Lock) 선택
-상세 근거는 위의 [동시성 제어 전략](#동시성-제어-전략) 참고.
-
-### 4. 도메인 객체 내 상태 전이 검증
+### 3. 도메인 객체 내 상태 전이 검증
 `EnrollmentStatus`와 `ClassStatus`가 허용된 전이 목록을 직접 관리. 잘못된 상태 전이 시 도메인 계층에서 즉시 예외 발생.
 
-### 5. @ConfigurationProperties (record) for JWT 설정
+### 4. @ConfigurationProperties (record) for JWT 설정
 `@Value` 대신 `@ConfigurationProperties` record를 사용하여 타입 안전성 확보 및 테스트 용이성 향상.
 
-### 6. 정적 팩토리 메서드 패턴
+### 5. 정적 팩토리 메서드 패턴
 엔티티 생성 시 `create()` 정적 팩토리 메서드를 사용하여 도메인 검증 로직을 생성 시점에 강제. 유효하지 않은 객체가 존재할 수 없도록 보장.
 
 ## 테스트 실행 방법
