@@ -112,6 +112,95 @@ stateDiagram-v2
     CANCELLED --> [*]
 ```
 
+## API 흐름 (시퀀스 다이어그램)
+
+### 강의 등록 및 상태 변경
+
+```mermaid
+sequenceDiagram
+    actor C as Creator
+    participant API as API Server
+    participant DB as Database
+
+    C->>API: POST /classes (강의 등록)
+    API->>API: Creator 조회 및 입력값 검증
+    API->>DB: Klass 저장 (status=DRAFT)
+    API-->>C: 201 Created
+
+    C->>API: PATCH /classes/{id}/status (OPEN)
+    API->>API: 소유권 확인 + 상태 전이 검증
+    API->>DB: status = OPEN
+    API-->>C: 200 OK
+```
+
+### 수강 신청
+
+```mermaid
+sequenceDiagram
+    actor S as Classmate
+    participant API as API Server
+    participant DB as Database
+
+    S->>API: POST /classes/{id}/enrollments
+    API->>DB: Klass 조회 (PESSIMISTIC_WRITE Lock)
+    API->>API: 강의 OPEN 상태 확인
+    API->>DB: 중복 신청 확인
+    API->>DB: 활성 수강 인원 조회
+
+    alt 정원 여유
+        API->>DB: Enrollment 저장 (PENDING)
+        API-->>S: 201 Created
+    else 정원 초과
+        API->>DB: Enrollment 저장 (WAITLISTED)
+        API-->>S: 201 Created (대기열 등록)
+    end
+```
+
+### 결제 확정
+
+```mermaid
+sequenceDiagram
+    actor S as Classmate
+    participant API as API Server
+    participant DB as Database
+
+    S->>API: PATCH /enrollments/{id}/confirm
+    API->>DB: Enrollment 조회
+    API->>API: 소유권 확인
+    API->>API: 상태 전이 검증 (PENDING → CONFIRMED)
+    API->>DB: status = CONFIRMED, confirmedAt 기록
+    API-->>S: 200 OK
+```
+
+### 수강 취소 (대기열 자동 승격 포함)
+
+```mermaid
+sequenceDiagram
+    actor S as Classmate
+    participant API as API Server
+    participant DB as Database
+
+    S->>API: PATCH /enrollments/{id}/cancel
+    API->>DB: Enrollment 조회
+    API->>API: 소유권 확인
+    API->>DB: Klass 조회 (PESSIMISTIC_WRITE Lock)
+
+    alt CONFIRMED 상태
+        API->>API: 취소 기간 검증 (7일 이내)
+    end
+
+    API->>DB: status = CANCELLED, cancelledAt 기록
+
+    alt 이전 상태가 PENDING 또는 CONFIRMED
+        API->>DB: 가장 오래된 WAITLISTED 조회
+        opt 대기자 존재
+            API->>DB: 대기자 status = PENDING (승격)
+        end
+    end
+
+    API-->>S: 200 OK
+```
+
 ## API 목록 및 예시
 
 ### 인증
