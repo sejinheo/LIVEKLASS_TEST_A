@@ -201,6 +201,26 @@ sequenceDiagram
     API-->>S: 200 OK
 ```
 
+## API 권한 매핑
+
+| Method | Endpoint | 권한 | 설명 |
+|--------|----------|------|------|
+| POST | `/api/creators/sign-up` | 공개 | 크리에이터 회원가입 |
+| POST | `/api/classmates/sign-up` | 공개 | 수강생 회원가입 |
+| POST | `/api/auth/login` | 공개 | 로그인 (JWT 발급) |
+| GET | `/api/classes` | 공개 | 강의 목록 조회 |
+| GET | `/api/classes/{classId}` | 공개 | 강의 상세 조회 |
+| POST | `/api/classes` | CREATOR | 강의 등록 |
+| PATCH | `/api/classes/{classId}/status` | CREATOR | 강의 상태 변경 |
+| GET | `/api/classes/{classId}/enrollments` | CREATOR | 강의별 수강생 목록 조회 |
+| POST | `/api/classes/{classId}/enrollments` | CLASSMATE | 수강 신청 |
+| PATCH | `/api/enrollments/{enrollmentId}/confirm` | CLASSMATE | 결제 확정 |
+| PATCH | `/api/enrollments/{enrollmentId}/cancel` | CLASSMATE | 수강 취소 |
+| GET | `/api/enrollments/me` | CLASSMATE | 내 수강 신청 목록 조회 |
+
+- **공개**: 인증 불필요
+- **CREATOR / CLASSMATE**: `Authorization: Bearer {token}` 필요, 해당 역할로 로그인한 토큰만 허용
+
 ## API 목록 및 예시
 
 ### 인증
